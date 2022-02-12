@@ -1,0 +1,24 @@
+.coordcssX{
+    bottom: 0px;
+    text-align: left;
+}
+
+.coordcssY{
+    top: 0px;
+    right: 0;
+    text-align: right;
+}
+
+.coord {
+    font-size: 14px;
+    margin: 4px;
+    z-index: -1;
+    position: absolute;
+    user-drag: none;
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    font-family: 'Bebas Neue', cursive;
+}
