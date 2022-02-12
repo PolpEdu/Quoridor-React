@@ -1,6 +1,6 @@
 import io from 'socket.io-client'
 
-const URL = 'https://quorridor.herokuapp.com/'
+const URL = 'https://quorridor-back-end.herokuapp.com/'
 
 const socket = io(URL, { transports: ["websocket"],forceNew: true })
 
