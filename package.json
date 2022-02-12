@@ -61,5 +61,9 @@
   "devDependencies": {
     "@types/webfontloader": "^1.6.34",
     "typescript": "^3.7.7"
+  },
+  "engines":{
+    "npm" : "6.14.8",
+    "node": "14.15.1"
   }
 }
