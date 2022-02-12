@@ -1,10 +1,10 @@
-# Quoridor_WEB
+# Quoridor MultiPlayer Game, using react 
 
 ## What is Quoridor?
 
 Quoridor is a 2- or 4-player Intuitive strategic game designed by Mirko Marchesi and published by Gigamic Games. [(more)](https://en.wikipedia.org/wiki/Quoridor)
 
-## Quoridor Implementation
+## Some cases of Quoridor SP vs AI/OTB Implementations:
 
 - case 1: [https://github.com/danielborowski/quoridor-ai/](https://github.com/danielborowski/quoridor-ai/)
 - case 2: [https://github.com/PetropoulakisPanagiotis/quoridor](https://github.com/PetropoulakisPanagiotis/quoridor)
@@ -17,6 +17,4 @@ Quoridor is a 2- or 4-player Intuitive strategic game designed by Mirko Marchesi
 - case 9: [https://github.com/ptitpoulpe/Quoridor](https://github.com/ptitpoulpe/Quoridor)
 - case 10: [https://github.com/aseem191/Quoridor-React](https://github.com/aseem191/Quoridor-React)
 
----
-
-발표 주제: 쿼리도 게임을 통해 알아보는 강화학습
+Link to the frontend: [Frontend](https://github.com/PolpEdu/Quorridor-BackEnd)
