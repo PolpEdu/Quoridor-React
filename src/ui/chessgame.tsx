@@ -8,7 +8,7 @@ const socket = require('../connection/socket').socket
 const QUOGameWrapper = (props: any) => {
 
   // get the gameId from the URL here and pass it to the chessGame component as a prop. 
-  const domainName = 'http://localhost:3000'
+  const domainName = 'https://quorridor.herokuapp.com/'
   const color = React.useContext(ColorContext)
   const { gameid } = useParams()
   const [opponentSocketId, setOpponentSocketId] = React.useState('')
