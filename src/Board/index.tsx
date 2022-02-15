@@ -9,21 +9,21 @@ import { AppConfig, Step, isEven, WallColor, Color } from "../Utils";
 interface Props {
   appConfig: AppConfig;
   step: Step;
-  move: (position: { x: number; y: number }, isMyMove: boolean) => void;
-  put: (position: { x: number; y: number }) => void;
+  playerMove: (position: { x: number; y: number }, isWall: boolean, isMyMove: boolean) => void;
   isHover: boolean[][];
   hoverOver: (position: { x: number; y: number }) => void;
   leave: () => void;
+  didredirect: boolean;
 }
 
 export const Board = ({
   appConfig,
   step,
-  move,
-  put,
+  playerMove,
   isHover,
   hoverOver,
   leave,
+  didredirect
 }: Props) => {
   const {
     boardHeight,
@@ -72,7 +72,8 @@ export const Board = ({
                     step={step}
                     hoverOver={hoverOver}
                     leave={leave}
-                    move={move}
+                    playerMove={playerMove}
+                    didredirect={didredirect}
                   ></Cell>
                 );
               } else if (!isEven(x) && isEven(y)) {
@@ -87,11 +88,13 @@ export const Board = ({
                       { x, y },
                       isHover[x][y]
                     )}
+                    step={step}
                     width={wallLonger}
                     height={breadth}
                     hoverOver={hoverOver}
                     leave={leave}
-                    put={put}
+                    playerMove={playerMove}
+                    didredirect={didredirect}
                   ></WallHorizontal>
                 );
               } else if (isEven(x) && !isEven(y)) {
@@ -106,11 +109,13 @@ export const Board = ({
                       { x, y },
                       isHover[x][y]
                     )}
+                    step={step}
                     width={breadth}
                     height={wallLonger}
                     hoverOver={hoverOver}
                     leave={leave}
-                    put={put}
+                    playerMove={playerMove}
+                    didredirect={didredirect}
                   ></WallVertical>
                 );
               } else {

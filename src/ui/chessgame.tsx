@@ -2,16 +2,15 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import QuoridorGame from './Game'
 import { ColorContext } from '../context/colorcontext'
-
 const socket = require('../connection/socket').socket
 
 const QUOGameWrapper = (props: any) => {
 
   // get the gameId from the URL here and pass it to the chessGame component as a prop. 
-  const domainName = 'https://quorridor.herokuapp.com/'
+  //const domainName = 'https://quorridor.herokuapp.com/'
+  const domainName = 'http://localhost:3000'
   const color = React.useContext(ColorContext)
   const { gameid } = useParams()
-  const [opponentSocketId, setOpponentSocketId] = React.useState('')
   const [opponentDidJoinTheGame, didJoinGame] = React.useState(false)
   const [opponentUserName, setUserName] = React.useState('')
   const [gameSessionDoesNotExist, doesntExist] = React.useState(false)
@@ -21,9 +20,6 @@ const QUOGameWrapper = (props: any) => {
     socket.on("playerJoinedRoom", (statusUpdate: any) => {
       console.log("A new player has joined the room! Username: " + statusUpdate.userName + ", Game id: " + statusUpdate.gameId + " Socket id: " + statusUpdate.mySocketId)
 
-      if (socket.id !== statusUpdate.mySocketId) {
-        setOpponentSocketId(statusUpdate.mySocketId)
-      }
     })
 
     socket.on("status", (statusUpdate: any) => {
@@ -44,8 +40,6 @@ const QUOGameWrapper = (props: any) => {
         // in chessGame, pass opponentUserName as a prop and label it as the enemy. 
         // in chessGame, use reactContext to get your own userName
         // socket.emit('myUserName')
-
-        console.log("requesting userName")
         socket.emit('request username', gameid)
       }
     })
@@ -60,10 +54,8 @@ const QUOGameWrapper = (props: any) => {
 
 
     socket.on('get Opponent UserName', (data: any) => {
-      console.log("gettting name")
       if (socket.id !== data.socketId) {
         setUserName(data.userName)
-        setOpponentSocketId(data.socketId)
         didJoinGame(true)
       }
     })
@@ -76,7 +68,7 @@ const QUOGameWrapper = (props: any) => {
   return (
     <React.Fragment>
       {opponentDidJoinTheGame ? (
-        <div>
+        <div className='waves'>
           <h2> Opponent: {opponentUserName} </h2>
           <QuoridorGame
             gameId={gameid == null ? "" : gameid}

@@ -10,10 +10,11 @@ interface Props {
   width: number;
   height: number;
   isHover: boolean[][];
-  move: (position: { x: number; y: number }, isMyMove: boolean) => void;
+  playerMove: (position: { x: number; y: number }, isWall: boolean, isMyMove: boolean) => void;
   hoverOver: (position: { x: number; y: number }) => void;
   leave: () => void;
   step: Step;
+  didredirect: boolean
 }
 
 const Cell = ({
@@ -22,10 +23,11 @@ const Cell = ({
   width,
   height,
   isHover,
-  move,
+  playerMove,
   hoverOver,
   leave,
   step,
+  didredirect
 }: Props) => {
   const { player0, player1, stepNumber } = step;
   const { background, hover } = isEven(stepNumber)
@@ -43,6 +45,9 @@ const Cell = ({
   const coordx = coords[Math.abs(y / 2)];
   const coordy = Math.abs(x / 2);
 
+
+  //is it my turn? (didredirect && this.state.stepNumber % 2 === 1) || (!didredirect && this.state.stepNumber % 2 === 0)
+
   if (x === 16 && y === 16) {
     return (
       <Pane
@@ -52,7 +57,7 @@ const Cell = ({
         width={width}
         height={height}
         onClick={() => {
-          move(position, isEven(stepNumber));
+          playerMove(position, false, (didredirect && step.stepNumber % 2 === 1) || (!didredirect && step.stepNumber % 2 === 0));
         }}
         onMouseOver={() => {
           hoverOver(position);
@@ -88,7 +93,7 @@ const Cell = ({
         width={width}
         height={height}
         onClick={() => {
-          move(position, isEven(stepNumber));
+          playerMove(position, false, true);
         }}
         onMouseOver={() => {
           hoverOver(position);
@@ -125,7 +130,7 @@ const Cell = ({
         width={width}
         height={height}
         onClick={() => {
-          move(position, isEven(stepNumber));
+          playerMove(position, false, true);
         }}
         onMouseOver={() => {
           hoverOver(position);
@@ -159,7 +164,7 @@ const Cell = ({
       width={width}
       height={height}
       onClick={() => {
-        move(position, isEven(stepNumber));
+        playerMove(position, false, true);
       }}
       onMouseOver={() => {
         hoverOver(position);

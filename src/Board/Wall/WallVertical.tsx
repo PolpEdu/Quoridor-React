@@ -1,15 +1,17 @@
 import React from "react";
 import { Pane } from "evergreen-ui";
-import { Color } from "../../Utils";
+import { Color, Step } from "../../Utils";
 
 interface Props {
   position: { x: number; y: number };
   color: Color;
   width: number;
   height: number;
-  put: (position: { x: number; y: number }) => void;
+  step: Step;
+  playerMove: (position: { x: number; y: number }, isWall: boolean, isMyMove: boolean) => void;
   hoverOver: (position: { x: number; y: number }) => void;
   leave: () => void;
+  didredirect: boolean;
 }
 
 const WallVertical = ({
@@ -17,9 +19,11 @@ const WallVertical = ({
   color,
   width,
   height,
-  put,
+  step,
+  playerMove,
   hoverOver,
   leave,
+  didredirect
 }: Props) => {
   return (
     <Pane
@@ -27,7 +31,7 @@ const WallVertical = ({
       width={width}
       height={height}
       onClick={() => {
-        put(position);
+        playerMove(position, true, (didredirect && step.stepNumber % 2 === 1) || (!didredirect && step.stepNumber % 2 === 0));
       }}
       onMouseOver={() => {
         hoverOver(position);

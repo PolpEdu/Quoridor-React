@@ -73,6 +73,7 @@ export const initialStep = {
 
 interface move {
   nextmove: Step;
+  MoveDYellow: boolean;
   gameId: string;
 };
 
@@ -83,12 +84,18 @@ type State = {
   history: History;
   isHover: boolean[][];
   theme: ThemeType;
-  isF: boolean;
 }
 
 type Props = {
   gameId: string;
   color: boolean;
+};
+
+type DataSent = {
+  nextmove: Step;
+  wallmove: boolean;
+  playerColorThatJustMovedIsYellow: boolean;
+  gameId: string;
 };
 
 
@@ -105,7 +112,6 @@ class QuoridorGame extends React.Component<Props, State> {
         return new Array(appConfig.boardWidth).fill(false)
       }),
       theme: ThemeType.light,
-      isF: this.props.color,
     };
     this.restart = this.restart.bind(this);
     this.cancel = this.cancel.bind(this);
@@ -127,29 +133,34 @@ class QuoridorGame extends React.Component<Props, State> {
 
 
   componentDidMount() {
-    socket.on('opponent move', (move: move) => {
+    socket.on('opponent move', (datasent: DataSent) => {
+      console.log("recieved move!")
 
-      console.log("opponenet's move: " + move.nextmove.stepNumber)
+      let move = datasent.nextmove;
+      let isWallMove = datasent.wallmove;
 
-      if (move.nextmove.stepNumber !== this.state.step.stepNumber) {
-        if (this.state.step.stepNumber % 2 == 0 || this.state.isF) {
-          this.moveTurn(move.nextmove.player0); //moveTurn() already updates the step number state
-          this.setState({
-            isF: false
-          });
+      console.log("opponenet's move: " + move.stepNumber)
+
+      console.log("should be yerllow? " + this.props.color)
+
+      if (datasent.nextmove.stepNumber !== this.state.step.stepNumber) {
+        console.log("recieved move is not the same as the current step")
+
+        if (this.props.color) {
+          console.log("player is yellow")
+          this.playerMove(move.player0, isWallMove, false);
+        } else {
+          console.log("player is red")
+          this.playerMove(move.player1, isWallMove, false);
         }
-        else {
-          this.moveTurn(move.nextmove.player1); //moveTurn() already updates the step number state
-        }
+
       }
 
       console.log("step number: " + this.state.step.stepNumber)
     })
   };
 
-  moveTurn = (position: { x: number; y: number }) => {
-    // move == [pieceId, finalPosition]
-
+  playerMove = (position: { x: number, y: number }, isWall: boolean, isMyMove: boolean): void => {
     const { stepNumber, player0, player1 } = this.state.step;
     const [...walls] = this.state.step.walls;
 
@@ -169,68 +180,77 @@ class QuoridorGame extends React.Component<Props, State> {
       stepNumber: this.state.step.stepNumber + 1,
     };
 
-
-    if (stepNumber % 2 === 0) { //is my move?
-      console.log("my move")
-      if (!canMove({ desiredPosition: position, opponent: player1, me: player0, walls })) return;
-
-      nextStep.player0.x = position.x;
-      nextStep.player0.y = position.y;
-
-      //check victory
-      if (appConfig.player0Destination.find((dest) => dest.x === nextStep.player0.x && dest.y === nextStep.player0.y)) {
-        this.setState({ isWin: true });
-      }
-
+    let Walked = false;
+    if (isWall) {
+      console.log("wall turn")
+      this.putWall(position, stepNumber, player1, player0, walls, nextStep);
     } else {
-      console.log("opponenet's move: ")
+      console.log("move turn")
+      this.moveTurn(position, stepNumber, player1, player0, walls, nextStep);
+      Walked = true;
+    }
 
-      if (!canMove({ desiredPosition: position, opponent: player0, me: player1, walls, })) return;
-      nextStep.player1.x = position.x;
-      nextStep.player1.y = position.y;
+    console.log(nextStep)
 
-      if (appConfig.player1Destination.find((dest) => dest.x === nextStep.player1.x && dest.y === nextStep.player1.y)) {
-        this.setState({ isWin: true });
-      }
-    };
+    if (nextStep === null || nextStep === undefined) {
+      return;
+    }
 
+    if (isMyMove) {
+      console.log("Emited!")
+      socket.emit('new move', {
+        nextmove: nextStep,
+        wallmove: isWall,
+        gameId: this.props.gameId
+      });
+    }
 
-    this.setState({ step: nextStep });
     const newHistory = [
       ...this.state.history.filter((step) => step.stepNumber < nextStep.stepNumber),
       nextStep
     ];
 
     this.setState({
-      history: newHistory
+      step: nextStep,
+      history: newHistory,
     });
 
-    socket.emit('new move', {
-      nextmove: nextStep,
-      gameId: this.props.gameId
-    });
+
+    if (Walked) {
+      //check victory
+      if (appConfig.player0Destination.find((dest) => dest.x === nextStep.player0.x && dest.y === nextStep.player0.y)) {
+        alert("Player 0 Wins!");
+        this.setState({ isWin: true });
+      }
+      else if (appConfig.player1Destination.find((dest) => dest.x === nextStep.player1.x && dest.y === nextStep.player1.y)) {
+        alert("Player 1 Wins!");
+        this.setState({ isWin: true });
+      }
+    }
+
   };
 
-  putWall = (position: { x: number; y: number }) => {
-    const { stepNumber, player0, player1 } = this.state.step;
-    const [...walls] = this.state.step.walls;
-    const { x, y } = position;
+  moveTurn = (position: { x: number; y: number }, stepNumber: number, player1: any, player0: any, walls: any, nextStep: Step): any => {
+    // move == [pieceId, finalPosition]
 
-    const nextStep = {
-      walls,
-      player0: {
-        x: this.state.step.player0.x,
-        y: this.state.step.player0.y,
-        remainingWalls: this.state.step.player0.remainingWalls,
-      },
-      player1: {
-        x: this.state.step.player1.x,
-        y: this.state.step.player1.y,
-        remainingWalls: this.state.step.player1.remainingWalls,
-      },
-      stepNumber: this.state.step.stepNumber + 1,
+    if (stepNumber % 2 === 0) {
+      if (!canMove({ desiredPosition: position, opponent: player1, me: player0, walls })) return null;
+
+      nextStep.player0.x = position.x;
+      nextStep.player0.y = position.y;
+
+    } else {
+      if (!canMove({ desiredPosition: position, opponent: player0, me: player1, walls, })) return null;
+
+      nextStep.player1.x = position.x;
+      nextStep.player1.y = position.y;
     };
 
+    return nextStep;
+  };
+
+  putWall = (position: { x: number; y: number }, stepNumber: number, player1: any, player0: any, walls: any, nextStep: Step): any => {
+    const { x, y } = position;
     const desiredPosition = [];
 
     if (!isEven(x) && isEven(y)) {
@@ -249,14 +269,7 @@ class QuoridorGame extends React.Component<Props, State> {
       }
     }
 
-    if (
-      !canPut({
-        desiredPosition,
-        walls,
-        player0Position: { x: player0.x, y: player0.y },
-        player1Position: { x: player1.x, y: player1.y },
-      })
-    )
+    if (!canPut({ desiredPosition, walls, player0Position: { x: player0.x, y: player0.y }, player1Position: { x: player1.x, y: player1.y }, }))
       return;
 
     if (isEven(stepNumber)) {
@@ -267,17 +280,6 @@ class QuoridorGame extends React.Component<Props, State> {
       nextStep.player1.remainingWalls -= 1;
     }
     nextStep.walls = [...walls, ...desiredPosition];
-
-    this.setState({ step: nextStep });
-
-    const newHistory = [
-      ...this.state.history.filter((step) => step.stepNumber < nextStep.stepNumber),
-      nextStep,
-    ];
-
-    this.setState({
-      history: newHistory
-    });
   };
 
   hoverOver = (position: { x: number; y: number }) => {
@@ -383,11 +385,11 @@ class QuoridorGame extends React.Component<Props, State> {
               <Board
                 appConfig={appConfig}
                 step={this.state.step}
-                move={this.moveTurn}
-                put={this.putWall}
+                playerMove={this.playerMove}
                 isHover={this.state.isHover}
                 hoverOver={this.hoverOver}
                 leave={this.leave}
+                didredirect={this.props.color}
               />
               <WallLeftIndicator appConfig={appConfig} step={this.state.step} id={1} />
             </Pane>
